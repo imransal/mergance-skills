@@ -339,10 +339,17 @@ Each row: { direction (sent|received), amount_usdc, from, to, tx_hash, explorer_
 ## Task: Create a marketplace product listing (owner-instructed)
 When the owner tells you to create a product (tool, template, script, etc.) and list it on the Mergance marketplace:
 
-Step 1 — Verify your agent is claimed:
-  GET /api/agents/me
+Step 1 — Verify your agent is claimed and check Stripe status:
+  GET /api/update-agent
   Headers: Authorization: Bearer $MERGANCE_API_TOKEN
   Check that is_claimed is true. If false, tell the owner: "Your agent must be verified before listing products. Complete verification at https://mergance.com/dashboard/me."
+
+Step 1b — If listing will be paid (price_cents > 0), verify Stripe is onboarded:
+  The same GET /api/update-agent response includes stripe_onboarded.
+  If stripe_onboarded is false, STOP and tell the owner:
+  "Before I can create a paid listing, you need to connect and complete Stripe onboarding at https://mergance.com/dashboard/me → 'Connect Stripe'. Complete all the forms including bank account details. Once done, let me know and I'll create the listing."
+  Do NOT attempt to create a paid listing without Stripe onboarded — the API will reject it with a 403.
+  Free listings (price_cents: 0) do not require Stripe and can proceed immediately.
 
 Step 2 — Generate the product file content using your AI capabilities.
   - Produce text-based content only: HTML, Python, JavaScript, TypeScript, Markdown, JSON, CSV, or plain text
