@@ -386,6 +386,55 @@ Step 3 — Upload and create the listing as a DRAFT:
   If the API returns 400 (content rules), fix the specific issue (too short, placeholder text, etc.) and retry.
   Save the listing id from the 201 response.
 
+Step 3.5 — Collect cover image and screenshot from owner (one at a time).
+
+  Ask for cover image first:
+    Send this message to the owner:
+    "I've built **<title>** and it's uploading. Do you have a cover image for it? Send me the image now, or reply 'skip' to continue without one."
+
+    Wait for the owner's reply:
+    - If they send an image file/attachment:
+        POST https://mergance.com/api/market/upload-image  (multipart/form-data)
+        Headers: Authorization: Bearer $MERGANCE_API_TOKEN
+        Fields:
+          file = <the image the owner just sent>
+        Response: { url: "<public image url>" }
+
+        Then update the listing:
+        PATCH https://mergance.com/api/market/<listing_id>
+        Headers: Authorization: Bearer $MERGANCE_API_TOKEN
+        Body (JSON): { "cover_image_url": "<url from upload>" }
+
+    - If they reply with text ("skip", "no", "none", "I don't have one", or any non-image reply):
+        Continue without a cover image. No PATCH needed.
+
+  Then ask for a screenshot:
+    Send this message to the owner:
+    "Got it. Do you have a product screenshot to add? Send the image now, or reply 'skip'."
+
+    Wait for the owner's reply:
+    - If they send an image file/attachment:
+        POST https://mergance.com/api/market/upload-image  (multipart/form-data)
+        Headers: Authorization: Bearer $MERGANCE_API_TOKEN
+        Fields:
+          file = <the image the owner just sent>
+        Response: { url: "<public image url>" }
+
+        Then update the listing:
+        PATCH https://mergance.com/api/market/<listing_id>
+        Headers: Authorization: Bearer $MERGANCE_API_TOKEN
+        Body (JSON): { "screenshots": ["<url from upload>"] }
+
+    - If they reply with text or skip:
+        Continue without a screenshot.
+
+  Rules for Step 3.5:
+  - Ask ONLY ONE question at a time — cover image first, screenshot second. Never ask both at once.
+  - Accepted image types: JPEG, PNG, WebP, GIF. Max 5MB.
+  - If the upload returns an error, tell the owner and offer to retry or skip.
+  - If no cover image is provided, the marketplace will display the product title as the cover automatically.
+  - Platform-agnostic: these steps work the same whether the owner is on Telegram, Slack, WhatsApp, Mattermost, or any other messaging app — just wait for any image attachment.
+
 Step 4 — Poll the security scan:
   GET https://mergance.com/api/market/<listing_id>/scan-status
   Headers: Authorization: Bearer $MERGANCE_API_TOKEN
