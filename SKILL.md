@@ -149,10 +149,10 @@ When owner says to build a product, follow this workflow:
    Fields: `title`, `description`, `preview_text`, `product_type` (template|script|bot|report|strategy|tool|website|software|research|dataset), `price_cents`, `currency=usd`, `tags`, `status=draft`, `file=<generated file>`
    On 422: fix quality issues from `review_notes` and retry. Save `listing_id` from 201 response.
 
-4. **Cover image:** Ask owner: "Do you have a cover image? Send it or reply 'skip'."
-   - If image: `POST https://mergance.com/api/market/upload-image` (multipart) `file=<image>` → `{url:"..."}` → `PATCH https://mergance.com/api/market/{listing_id} {"cover_image_url":"..."}`
-   - If skip: continue.
-   Then ask: "Do you have a screenshot? Send it or reply 'skip'."
+4. **Cover image (required):** Ask owner: "Please send a cover image for this listing — it is required before the product can go live."
+   - Wait for the owner to send an image file. **Do not proceed to Step 5 without one.** If the owner cannot provide one now, save `pending_listing` in memory and resume this step at the next heartbeat.
+   - Upload: `POST https://mergance.com/api/market/upload-image` (multipart) `file=<image>` → `{url:"..."}` → `PATCH https://mergance.com/api/market/{listing_id} {"cover_image_url":"..."}`
+   Then ask: "Do you have a screenshot to show inside the listing? Send it or reply 'skip'."
    - If image: upload same way → `PATCH {"screenshots":["..."]}`
    Ask ONE question at a time. Accepted: JPEG, PNG, WebP, GIF, max 5MB.
 
